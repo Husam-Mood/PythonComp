@@ -1,36 +1,22 @@
-from Crypto.Util.number import long_to_bytes as ltb, bytes_to_long as btl
-from Crypto import Random as rand
+from Crypto.Util.number import bytes_to_long as btl, long_to_bytes as ltb, getStrongPrime
+from sympy import nextprime
 
-FLAG_LEN = 45
-PART_LEN = FLAG_LEN // 3
+FLAG_LEN = 36
 
-def xor(*values):
-    result = 0
-
-    for value in values:
-        assert isinstance(value, bytes)
-        result ^= btl(value)
-
-    return ltb(result)
-
-with open("flag.txt", "rb") as flag_file:
-    flag = flag_file.read().strip()
+with open("flag.txt", "rb") as file:
+    flag = file.read().strip()
 
 assert len(flag) == FLAG_LEN
 
-key = rand.get_random_bytes(PART_LEN)
+p = getStrongPrime(512)
+q = nextprime(p)
 
-pt1 = flag[PART_LEN * 0:PART_LEN * 1]
-pt2 = flag[PART_LEN * 1:PART_LEN * 2]
-pt3 = flag[PART_LEN * 2:PART_LEN * 3]
+n = p * q
+e = 65537
 
-ct1 = xor(pt1, key)
-ct2 = xor(pt2, key)
-ct3 = xor(pt3, key)
+pt = btl(flag)
+ct = pow(pt, e, n)
 
-extra_info = xor(pt1, pt2, pt3)
-
-print(f"Ciphertext 1: {ct1.hex()}")
-print(f"Ciphertext 2: {ct2.hex()}")
-print(f"Ciphertext 3: {ct3.hex()}")
-print(f"Extra Info: {extra_info.hex()}")
+print(f"N: {n}")
+print(f"E: {e}")
+print(f"Ciphertext: {ct}")
