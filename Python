@@ -1,0 +1,36 @@
+from Crypto.Util.number import long_to_bytes as ltb, bytes_to_long as btl
+from Crypto import Random as rand
+
+FLAG_LEN = 45
+PART_LEN = FLAG_LEN // 3
+
+def xor(*values):
+    result = 0
+
+    for value in values:
+        assert isinstance(value, bytes)
+        result ^= btl(value)
+
+    return ltb(result)
+
+with open("flag.txt", "rb") as flag_file:
+    flag = flag_file.read().strip()
+
+assert len(flag) == FLAG_LEN
+
+key = rand.get_random_bytes(PART_LEN)
+
+pt1 = flag[PART_LEN * 0:PART_LEN * 1]
+pt2 = flag[PART_LEN * 1:PART_LEN * 2]
+pt3 = flag[PART_LEN * 2:PART_LEN * 3]
+
+ct1 = xor(pt1, key)
+ct2 = xor(pt2, key)
+ct3 = xor(pt3, key)
+
+extra_info = xor(pt1, pt2, pt3)
+
+print(f"Ciphertext 1: {ct1.hex()}")
+print(f"Ciphertext 2: {ct2.hex()}")
+print(f"Ciphertext 3: {ct3.hex()}")
+print(f"Extra Info: {extra_info.hex()}")
